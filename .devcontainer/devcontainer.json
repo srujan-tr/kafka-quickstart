@@ -1,27 +1,24 @@
 {
-  "name": "Kafka Development Environment",
+  "name": "Kafka Development",
   "image": "mcr.microsoft.com/devcontainers/java:17-bullseye",
   "features": {
     "ghcr.io/devcontainers/features/common-utils:2": {
-      "installZsh": true,
-      "configureZshAsDefaultShell": true
+      "installZsh": true
     }
   },
   "customizations": {
     "vscode": {
       "extensions": [
-        "redhat.vscode-yaml",
-        "vscjava.vscode-java-pack"
+        "redhat.vscode-yaml"
       ]
     }
   },
-  // Installs Kafka 4.1.0 (latest stable) natively in the container
   "postCreateCommand": "bash .devcontainer/setup-kafka.sh",
   "postStartCommand": "bash .devcontainer/start-kafka.sh",
   "forwardPorts": [9092],
   "portsAttributes": {
     "9092": {
-      "label": "Kafka Broker",
+      "label": "Kafka",
       "onAutoForward": "notify"
     }
   },
