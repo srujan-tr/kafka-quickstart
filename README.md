@@ -1,94 +1,162 @@
-# Kafka Quickstart
+# Kafka Development Environment
 
-A simple Apache Kafka 4.1.0 setup using Docker Compose with KRaft mode (no Zookeeper required).
+A streamlined Kafka development environment for GitHub Codespaces that runs Kafka natively (without Docker-in-Docker complexity).
 
-## Prerequisites
+## 🚀 Quick Start
 
-- Docker and Docker Compose installed
+1. **Open in GitHub Codespaces**
+   - Click the green "Code" button on GitHub
+   - Select "Codespaces" tab
+   - Click "Create codespace on main"
 
-## GitHub Codespaces Support
+2. **Wait for Setup** (3-5 minutes)
+   - Codespace will automatically:
+     - Install Java 17
+     - Download and configure Kafka 4.1.0 (latest)
+     - Start Kafka in KRaft mode (no Zookeeper)
+     - Configure helpful aliases
 
-This repository includes a `.devcontainer` configuration for GitHub Codespaces. When you open this repo in Codespaces, it will automatically:
-- Set up a development environment with Docker-in-Docker
-- Start Kafka automatically
-- Forward port 9092 for Kafka access
-
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new)
-
-## Quick Start
-
-1. **Start Kafka:**
+3. **Verify Kafka is Running**
    ```bash
-   docker-compose up -d
+   kafka-service status
    ```
 
-2. **Check if Kafka is running:**
-   ```bash
-   docker-compose ps
-   ```
+## 📋 Available Commands
 
-3. **Create a topic:**
-   ```bash
-   docker exec -it kafka kafka-topics.sh --bootstrap-server localhost:9092 --create --topic test-topic --partitions 3 --replication-factor 1
-   ```
-
-4. **List topics:**
-   ```bash
-   docker exec -it kafka kafka-topics.sh --bootstrap-server localhost:9092 --list
-   ```
-
-5. **Produce messages:**
-   ```bash
-   docker exec -it kafka kafka-console-producer.sh --bootstrap-server localhost:9092 --topic test-topic
-   ```
-
-6. **Consume messages:**
-   ```bash
-   docker exec -it kafka kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic test-topic --from-beginning
-   ```
-
-## Client Usage
-
-Kafka supports clients in many programming languages. You can connect to the Kafka broker at `localhost:9092` using any Kafka client library:
-
-- **Java**: Apache Kafka official client
-- **Python**: kafka-python, confluent-kafka-python
-- **Node.js**: kafkajs, node-rdkafka
-- **Go**: confluent-kafka-go, sarama
-- **Rust**: rdkafka
-- **.NET**: Confluent.Kafka
-
-All clients connect to the same bootstrap server: `localhost:9092`
-
-## Stop Kafka
-
+### Service Management
 ```bash
-docker-compose down
+kafka-service start    # Start Kafka
+kafka-service stop     # Stop Kafka
+kafka-service status   # Check if Kafka is running
+kafka-service restart  # Restart Kafka
+kafka-service logs     # View Kafka logs
 ```
 
-To also remove the volumes (data):
+### Kafka Operations (Shortcuts)
 ```bash
-docker-compose down -v
+# Topic management
+kafka-topics --list
+kafka-topics --create --topic my-topic --partitions 3
+kafka-topics --describe --topic my-topic
+kafka-topics --delete --topic my-topic
+
+# Producer (send messages)
+kafka-console-producer --topic my-topic
+
+# Consumer (read messages)
+kafka-console-consumer --topic my-topic --from-beginning
 ```
 
-## Configuration
+### Quick Test
+```bash
+kafka-test  # Runs a quick test by creating a topic and sending/receiving a message
+```
 
-The Kafka broker is configured in KRaft mode (no Zookeeper) with the following settings:
-- Bootstrap server: `localhost:9092`
-- Single broker setup with controller
-- Auto topic creation enabled
-- Data persisted in Docker volume
+## 🏗️ Architecture
 
-## Kafka 4.1.0 Features
+This setup runs Kafka **natively in the Codespace container** rather than using Docker-in-Docker:
 
-This setup uses Apache Kafka 4.1.0, which includes:
-- KRaft mode (no Zookeeper dependency)
-- Improved performance and simplified operations
-- New queuing capabilities through share groups
-- Enhanced streams rebalance protocol
+- **Simpler**: No nested container complexity
+- **Faster**: Direct execution without container overhead
+- **More Reliable**: Avoids Docker networking issues
+- **Resource Efficient**: Single container environment
 
-For production environments, consider:
-- Multiple brokers for high availability
-- Proper replication factors
-- Security configurations (SSL/SASL)
-- Resource limits and JVM tuning
+### Technical Details
+
+- **Kafka Version**: 4.1.0 (latest stable)
+- **Mode**: KRaft (no Zookeeper required)
+- **Java**: OpenJDK 17
+- **Port**: 9092 (auto-forwarded)
+- **Data Directory**: `/workspace/kafka-data`
+- **Logs**: `/tmp/kafka.log`
+
+## 📁 Project Structure
+
+```
+kafka-quickstart/
+├── .devcontainer/
+│   ├── devcontainer.json    # Codespace configuration
+│   ├── setup-kafka.sh       # Installation script
+│   └── start-kafka.sh       # Startup script
+└── README.md
+```
+
+## 💡 Examples
+
+### Create a Topic and Send Messages
+```bash
+# Create a topic
+kafka-topics --create --topic events --partitions 3
+
+# Send some messages
+kafka-console-producer --topic events
+> Hello Kafka!
+> This is a test message
+> ^C to exit
+
+# Read messages
+kafka-console-consumer --topic events --from-beginning
+```
+
+### Check Cluster Health
+```bash
+# List all topics
+kafka-topics --list
+
+# Check broker status
+kafka-broker-api-versions.sh --bootstrap-server localhost:9092
+
+# View logs
+kafka-service logs
+```
+
+## 🔧 Troubleshooting
+
+### Kafka Not Starting?
+```bash
+# Check the logs
+cat /tmp/kafka.log
+
+# Try manual start
+/opt/kafka/bin/kafka-server-start.sh /opt/kafka/config/kraft/server.properties
+```
+
+### Port 9092 Not Accessible?
+- Check the "Ports" tab in VS Code
+- Ensure port 9092 is listed and forwarded
+- Try `localhost:9092` or use the Codespace URL
+
+### Reset Kafka Data
+```bash
+# Stop Kafka
+kafka-service stop
+
+# Clear data
+rm -rf /workspace/kafka-data/*
+
+# Reinitialize and start
+bash .devcontainer/setup-kafka.sh
+kafka-service start
+```
+
+## 📚 Resources
+
+- [Apache Kafka Documentation](https://kafka.apache.org/documentation/)
+- [Kafka Quickstart Guide](https://kafka.apache.org/quickstart)
+- [KRaft Mode Documentation](https://kafka.apache.org/documentation/#kraft)
+- [GitHub Codespaces](https://docs.github.com/en/codespaces)
+
+## 🎯 Why Native Kafka?
+
+Traditional Docker-in-Docker setups in Codespaces can be problematic:
+- DNS resolution issues
+- Complex networking
+- Resource overhead
+- Build failures
+
+This native approach:
+- ✅ Starts faster
+- ✅ Uses less resources  
+- ✅ More reliable
+- ✅ Easier to debug
+- ✅ Direct access to Kafka processes

@@ -1,32 +1,27 @@
 {
-  "name": "Kafka Development",
-  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "name": "Kafka Development Environment",
+  "image": "mcr.microsoft.com/devcontainers/java:17-bullseye",
   "features": {
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {
-      "moby": true,
-      "installDockerBuildx": true
-    },
     "ghcr.io/devcontainers/features/common-utils:2": {
       "installZsh": true,
       "configureZshAsDefaultShell": true
-    },
-    "ghcr.io/devcontainers/features/java:1": {
-      "version": "17"
     }
   },
   "customizations": {
     "vscode": {
       "extensions": [
-        "ms-azuretools.vscode-docker",
-        "redhat.vscode-yaml"
+        "redhat.vscode-yaml",
+        "vscjava.vscode-java-pack"
       ]
     }
   },
-  "postCreateCommand": "bash -c 'wget -q https://downloads.apache.org/kafka/4.1.0/kafka_2.13-4.1.0.tgz && tar -xzf kafka_2.13-4.1.0.tgz && sudo mv kafka_2.13-4.1.0 /opt/kafka && sudo ln -s /opt/kafka/bin/* /usr/local/bin/ && rm kafka_2.13-4.1.0.tgz && docker-compose up -d'",
+  // Installs Kafka 4.1.0 (latest stable) natively in the container
+  "postCreateCommand": "bash .devcontainer/setup-kafka.sh",
+  "postStartCommand": "bash .devcontainer/start-kafka.sh",
   "forwardPorts": [9092],
   "portsAttributes": {
     "9092": {
-      "label": "Kafka",
+      "label": "Kafka Broker",
       "onAutoForward": "notify"
     }
   },

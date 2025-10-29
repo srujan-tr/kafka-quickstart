@@ -1,10 +1,25 @@
-.git
-.DS_Store
-.env
-.idea/
-.vscode/
-kafka-data/
+# Kafka data and logs
+/kafka-data/
+/workspace/kafka-data/
 *.log
+
+# IDE files
+.vscode/
+.idea/
+*.iml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.swp
+*~
+
+# Build artifacts
 target/
 build/
-node_modules/
+out/
+*.class
+*.jar
