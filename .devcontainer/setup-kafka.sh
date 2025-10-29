@@ -33,49 +33,44 @@ mkdir -p "${KAFKA_DATA_DIR}/kraft-combined-logs"
 
 # Configure Kafka for KRaft mode
 echo "⚙️ Configuring Kafka (KRaft mode)..."
-cat > ${KAFKA_HOME}/config/kraft/server.properties << EOF
+# Kafka 4.1.0 comes with a KRaft-ready server.properties - we just need to modify it
+if [ -f "${KAFKA_HOME}/config/server.properties" ]; then
+    echo "Using existing server.properties template"
+    # Backup original
+    cp ${KAFKA_HOME}/config/server.properties ${KAFKA_HOME}/config/server.properties.original
+    
+    # Modify the config for our setup
+    sed -i 's/^#node.id=/node.id=1/' ${KAFKA_HOME}/config/server.properties
+    sed -i 's/^#controller.quorum.voters=/controller.quorum.voters=1@localhost:9093/' ${KAFKA_HOME}/config/server.properties
+    sed -i "s|^log.dirs=.*|log.dirs=${KAFKA_DATA_DIR}|g" ${KAFKA_HOME}/config/server.properties
+    
+    # Uncomment and set listeners if needed
+    sed -i 's/^#listeners=PLAINTEXT:\/\/:9092,CONTROLLER:\/\/:9093/listeners=PLAINTEXT:\/\/localhost:9092,CONTROLLER:\/\/localhost:9093/' ${KAFKA_HOME}/config/server.properties
+    sed -i 's/^#advertised.listeners=PLAINTEXT:\/\/localhost:9092/advertised.listeners=PLAINTEXT:\/\/localhost:9092/' ${KAFKA_HOME}/config/server.properties
+else
+    echo "Creating new server.properties"
+    cat > ${KAFKA_HOME}/config/server.properties << EOF
 # KRaft Mode Configuration
 process.roles=broker,controller
 node.id=1
 controller.quorum.voters=1@localhost:9093
-
-# Listeners
 listeners=PLAINTEXT://localhost:9092,CONTROLLER://localhost:9093
 advertised.listeners=PLAINTEXT://localhost:9092
 controller.listener.names=CONTROLLER
 inter.broker.listener.name=PLAINTEXT
 listener.security.protocol.map=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
-
-# Storage
-log.dirs=${KAFKA_DATA_DIR}/kraft-combined-logs
-
-# Performance
-num.network.threads=8
-num.io.threads=8
-socket.send.buffer.bytes=102400
-socket.receive.buffer.bytes=102400
-socket.request.max.bytes=104857600
-
-# Log Retention
-log.retention.hours=168
-log.segment.bytes=1073741824
-log.retention.check.interval.ms=300000
-
-# Replication
+log.dirs=${KAFKA_DATA_DIR}
 offsets.topic.replication.factor=1
 transaction.state.log.replication.factor=1
 transaction.state.log.min.isr=1
-
-# Topics
-num.partitions=1
-auto.create.topics.enable=true
 EOF
+fi
 
 # Generate Cluster ID and format storage
 echo "🔑 Initializing Kafka storage..."
 KAFKA_CLUSTER_ID="$(${KAFKA_HOME}/bin/kafka-storage.sh random-uuid)"
 echo "Cluster ID: ${KAFKA_CLUSTER_ID}"
-${KAFKA_HOME}/bin/kafka-storage.sh format -t ${KAFKA_CLUSTER_ID} -c ${KAFKA_HOME}/config/kraft/server.properties
+${KAFKA_HOME}/bin/kafka-storage.sh format -t ${KAFKA_CLUSTER_ID} -c ${KAFKA_HOME}/config/server.properties
 
 # Create service management script
 echo "📝 Creating service management script..."
@@ -92,7 +87,7 @@ case "$1" in
       echo "✅ Kafka is already running (PID: $(cat $KAFKA_PID_FILE))"
     else
       echo "Starting Kafka..."
-      nohup ${KAFKA_HOME}/bin/kafka-server-start.sh ${KAFKA_HOME}/config/kraft/server.properties > ${KAFKA_LOG_FILE} 2>&1 &
+      nohup ${KAFKA_HOME}/bin/kafka-server-start.sh ${KAFKA_HOME}/config/server.properties > ${KAFKA_LOG_FILE} 2>&1 &
       echo $! > "$KAFKA_PID_FILE"
       sleep 3
       if kill -0 $(cat "$KAFKA_PID_FILE") 2>/dev/null; then
