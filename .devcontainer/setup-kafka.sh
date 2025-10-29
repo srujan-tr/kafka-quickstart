@@ -43,6 +43,8 @@ for rcfile in ~/.bashrc ~/.zshrc; do
     echo "alias kc='kafka-console-consumer.sh --bootstrap-server localhost:9092'" >> $rcfile
     echo "alias kafka-start='nohup $KAFKA_HOME/bin/kafka-server-start.sh $KAFKA_HOME/config/server.properties > /tmp/kafka.log 2>&1 &'" >> $rcfile
     echo "alias kafka-log='tail -f /tmp/kafka.log'" >> $rcfile
+    source $rcfile
+    echo "📝 Kafka commands added to $rcfile"
   fi
 done
 
