@@ -16,26 +16,33 @@ sudo mv /opt/kafka_2.13-${KAFKA_VERSION} ${KAFKA_HOME}
 sudo ln -sf ${KAFKA_HOME}/bin/*.sh /usr/local/bin/
 rm kafka_2.13-${KAFKA_VERSION}.tgz
 
-# Minimal configuration - just uncomment 2 required fields!
-echo "⚙️ Configuring Kafka..."
+# Fix permissions after sudo installation
+echo "⚙️ Setting permissions..."
 cd ${KAFKA_HOME}
-sed -i 's/^#node.id=/node.id=1/' config/server.properties
-sed -i 's/^#controller.quorum.voters=/controller.quorum.voters=1@localhost:9093/' config/server.properties
+sudo chown -R $(whoami):$(whoami) ${KAFKA_HOME}
 
-# Initialize storage
+# Initialize storage with --standalone (no config changes needed!)
 echo "🔑 Initializing storage..."
 CLUSTER_ID=$(bin/kafka-storage.sh random-uuid)
 echo "Cluster ID: $CLUSTER_ID"
-bin/kafka-storage.sh format -t $CLUSTER_ID -c config/server.properties
+bin/kafka-storage.sh format -t $CLUSTER_ID -c config/server.properties --standalone
 
-echo "✅ Setup complete! Use 'kafka-start' to start Kafka"
+echo "✅ Setup complete!"
 
-# Create simple helper script
-cat > /usr/local/bin/kafka-start << 'EOF'
-#!/bin/bash
-echo "Starting Kafka..."
-nohup /opt/kafka/bin/kafka-server-start.sh /opt/kafka/config/server.properties > /tmp/kafka.log 2>&1 &
-echo "Kafka started! PID: $!"
-echo "Logs: tail -f /tmp/kafka.log"
-EOF
-chmod +x /usr/local/bin/kafka-start
+# Add Kafka to PATH and create aliases
+echo "" >> ~/.bashrc
+echo "# Kafka Configuration" >> ~/.bashrc
+echo 'export KAFKA_HOME=/opt/kafka' >> ~/.bashrc
+echo 'export PATH="$KAFKA_HOME/bin:$PATH"' >> ~/.bashrc
+echo "" >> ~/.bashrc
+echo "# Kafka Shortcuts" >> ~/.bashrc
+echo "alias kt='kafka-topics.sh --bootstrap-server localhost:9092'" >> ~/.bashrc
+echo "alias kp='kafka-console-producer.sh --bootstrap-server localhost:9092'" >> ~/.bashrc
+echo "alias kc='kafka-console-consumer.sh --bootstrap-server localhost:9092'" >> ~/.bashrc
+echo "alias kafka-start='nohup $KAFKA_HOME/bin/kafka-server-start.sh $KAFKA_HOME/config/server.properties > /tmp/kafka.log 2>&1 &'" >> ~/.bashrc
+echo "alias kafka-log='tail -f /tmp/kafka.log'" >> ~/.bashrc
+
+source ~/.bashrc
+
+echo "📝 Kafka commands are now in PATH."
+echo "🚀 Quick commands: kt (topics), kp (producer), kc (consumer), kafka-start, kafka-log"
