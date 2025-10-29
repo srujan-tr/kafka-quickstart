@@ -43,10 +43,11 @@ for rcfile in ~/.bashrc ~/.zshrc; do
     echo "alias kc='kafka-console-consumer.sh --bootstrap-server localhost:9092'" >> $rcfile
     echo "alias kafka-start='nohup $KAFKA_HOME/bin/kafka-server-start.sh $KAFKA_HOME/config/server.properties > /tmp/kafka.log 2>&1 &'" >> $rcfile
     echo "alias kafka-log='tail -f /tmp/kafka.log'" >> $rcfile
-    source $rcfile
     echo "📝 Kafka commands added to $rcfile"
   fi
 done
+echo "If you are using zsh, run 'source ~/.zshrc' to load the aliases."
+echo "If you are using bash, run 'source ~/.bashrc' to load the aliases."
 
 echo "📝 Kafka commands are now in PATH."
 echo "🚀 Quick commands: kt (topics), kp (producer), kc (consumer), kafka-start, kafka-log"
