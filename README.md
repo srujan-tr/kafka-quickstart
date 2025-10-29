@@ -18,38 +18,37 @@ A streamlined Kafka development environment for GitHub Codespaces that runs Kafk
 
 3. **Verify Kafka is Running**
    ```bash
-   kafka-service status
+   kt --list  # Should connect successfully
    ```
 
 ## 📋 Available Commands
 
-### Service Management
+After setup, Kafka commands are in your PATH with convenient aliases:
+
+### Quick Shortcuts
 ```bash
-kafka-service start    # Start Kafka
-kafka-service stop     # Stop Kafka
-kafka-service status   # Check if Kafka is running
-kafka-service restart  # Restart Kafka
-kafka-service logs     # View Kafka logs
+# Super simple aliases (already configured!)
+kt --list                                  # List all topics
+kt --create --topic my-topic              # Create a topic
+echo "Hello" | kp --topic my-topic        # Send a message
+kc --topic my-topic --from-beginning      # Read messages
+
+kafka-start                                # Start Kafka
+kafka-log                                  # View Kafka logs
 ```
 
-### Kafka Operations (Shortcuts)
+### Full Commands (also available)
 ```bash
-# Topic management
-kafka-topics --list
-kafka-topics --create --topic my-topic --partitions 3
-kafka-topics --describe --topic my-topic
-kafka-topics --delete --topic my-topic
-
-# Producer (send messages)
-kafka-console-producer --topic my-topic
-
-# Consumer (read messages)
-kafka-console-consumer --topic my-topic --from-beginning
+# These work too if you prefer full names
+kafka-topics.sh --list --bootstrap-server localhost:9092
+kafka-console-producer.sh --topic my-topic --bootstrap-server localhost:9092
+kafka-console-consumer.sh --topic my-topic --bootstrap-server localhost:9092 --from-beginning
 ```
 
 ### Quick Test
 ```bash
-kafka-test  # Runs a quick test by creating a topic and sending/receiving a message
+# Test Kafka with one line
+kt --create --topic test && echo "It works!" | kp --topic test && kc --topic test --from-beginning --max-messages 1
 ```
 
 ## 🏗️ Architecture
@@ -64,11 +63,12 @@ This setup runs Kafka **natively in the Codespace container** rather than using 
 ### Technical Details
 
 - **Kafka Version**: 4.1.0 (latest stable)
-- **Mode**: KRaft (no Zookeeper required)
+- **Mode**: KRaft with `--standalone` (perfect for development)
 - **Java**: OpenJDK 17
 - **Port**: 9092 (auto-forwarded)
-- **Data Directory**: `/workspace/kafka-data`
+- **Data Directory**: `/tmp/kafka-logs`
 - **Logs**: `/tmp/kafka.log`
+- **Setup**: Just 3 commands - download, format with --standalone, start!
 
 ## 📁 Project Structure
 

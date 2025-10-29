@@ -29,20 +29,22 @@ bin/kafka-storage.sh format -t $CLUSTER_ID -c config/server.properties --standal
 
 echo "✅ Setup complete!"
 
-# Add Kafka to PATH and create aliases
-echo "" >> ~/.zshrc
-echo "# Kafka Configuration" >> ~/.zshrc
-echo 'export KAFKA_HOME=/opt/kafka' >> ~/.zshrc
-echo 'export PATH="$KAFKA_HOME/bin:$PATH"' >> ~/.zshrc
-echo "" >> ~/.zshrc
-echo "# Kafka Shortcuts" >> ~/.zshrc
-echo "alias kt='kafka-topics.sh --bootstrap-server localhost:9092'" >> ~/.zshrc
-echo "alias kp='kafka-console-producer.sh --bootstrap-server localhost:9092'" >> ~/.zshrc
-echo "alias kc='kafka-console-consumer.sh --bootstrap-server localhost:9092'" >> ~/.zshrc
-echo "alias kafka-start='nohup $KAFKA_HOME/bin/kafka-server-start.sh $KAFKA_HOME/config/server.properties > /tmp/kafka.log 2>&1 &'" >> ~/.zshrc
-echo "alias kafka-log='tail -f /tmp/kafka.log'" >> ~/.zshrc
-
-source ~/.zshrc
+# Add Kafka to PATH and create aliases (for both bash and zsh)
+for rcfile in ~/.bashrc ~/.zshrc; do
+  if [ -f "$rcfile" ]; then
+    echo "" >> $rcfile
+    echo "# Kafka Configuration" >> $rcfile
+    echo 'export KAFKA_HOME=/opt/kafka' >> $rcfile
+    echo 'export PATH="$KAFKA_HOME/bin:$PATH"' >> $rcfile
+    echo "" >> $rcfile
+    echo "# Kafka Shortcuts" >> $rcfile
+    echo "alias kt='kafka-topics.sh --bootstrap-server localhost:9092'" >> $rcfile
+    echo "alias kp='kafka-console-producer.sh --bootstrap-server localhost:9092'" >> $rcfile
+    echo "alias kc='kafka-console-consumer.sh --bootstrap-server localhost:9092'" >> $rcfile
+    echo "alias kafka-start='nohup $KAFKA_HOME/bin/kafka-server-start.sh $KAFKA_HOME/config/server.properties > /tmp/kafka.log 2>&1 &'" >> $rcfile
+    echo "alias kafka-log='tail -f /tmp/kafka.log'" >> $rcfile
+  fi
+done
 
 echo "📝 Kafka commands are now in PATH."
 echo "🚀 Quick commands: kt (topics), kp (producer), kc (consumer), kafka-start, kafka-log"
