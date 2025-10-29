@@ -9,7 +9,7 @@ echo "=========================================="
 KAFKA_VERSION="4.1.0"
 KAFKA_SCALA_VERSION="2.13"
 KAFKA_HOME="/opt/kafka"
-KAFKA_DATA_DIR="/workspace/kafka-data"
+KAFKA_DATA_DIR="/workspaces/kafka-quickstart/kafka-data"
 
 # Download and install Kafka
 echo "📥 Downloading Kafka ${KAFKA_VERSION} (latest stable)..."
