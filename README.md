@@ -1,49 +1,94 @@
-# Overview
+# Kafka Quickstart
 
-Welcome to this ready to run repository to get started with the [Apache Airflow Kafka provider](https://airflow.apache.org/docs/apache-airflow-providers-apache-kafka/stable/index.html)! :rocket:
+A simple Apache Kafka 4.1.0 setup using Docker Compose with KRaft mode (no Zookeeper required).
 
-This repository assumes you have basic knowledge of Apache Kafka and Apache Airflow. You can find resources on these tools in the [Resouces](#resources) section below.
+## Prerequisites
 
-This repository contains 3 DAGs:
+- Docker and Docker Compose installed
 
-- `produce_consume_treats`: This DAG will produce NUMBER_OF_TREATS messages to a local Kafka cluster. Run it manually to produce and consume new messages.
-- `listen_to_the_stream`: This DAG will continuously listen to a topic in a local Kafka cluster and run the `event_triggered_function` whenever a message causes the `apply_function` to return a value. Unpause this DAG to have it continuously run.
-- `walking_your_pet`: This DAG is the downstream DAG the given `event_triggered_function` in the `listen_to_the_stream` DAG will trigger. Unpause this DAG to have it ready to be triggered by a TriggerDagRunOperator in the upstream DAG.
+## GitHub Codespaces Support
 
-# How to use this repository
+This repository includes a `.devcontainer` configuration for GitHub Codespaces. When you open this repo in Codespaces, it will automatically:
+- Set up a development environment with Docker-in-Docker
+- Start Kafka automatically
+- Forward port 9092 for Kafka access
 
-This repository is designed to spin up both a local Kafka cluster and a local Astro project and connect them automatically. Note that it sometimes takes a minute longer for the Kafka cluster to be fully started.
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new)
 
-## Option 1: Use GitHub Codespaces
+## Quick Start
 
-Run this Airflow project without installing anything locally.
+1. **Start Kafka:**
+   ```bash
+   docker-compose up -d
+   ```
 
-1. Fork this repository.
-2. Create a new GitHub codespaces project on your fork. Make sure it uses at least 4 cores!
+2. **Check if Kafka is running:**
+   ```bash
+   docker-compose ps
+   ```
 
-    ![Fork repo and create a codespaces project](src/fork_and_codespaces.png)
+3. **Create a topic:**
+   ```bash
+   docker exec -it kafka kafka-topics.sh --bootstrap-server localhost:9092 --create --topic test-topic --partitions 3 --replication-factor 1
+   ```
 
-3. After creating the codespaces project the Astro CLI will automatically start up all necessary Airflow components as well as the local Kafka cluster, using the instructions in the `docker-compose.override.yml`. This can take a few minutes. 
-4. Once the Airflow project has started access the Airflow UI by clicking on the **Ports** tab and opening the forward URL for port 8080. You can log in using `admin` as the username and `admin` as the password.
+4. **List topics:**
+   ```bash
+   docker exec -it kafka kafka-topics.sh --bootstrap-server localhost:9092 --list
+   ```
 
-    ![Open Airflow UI URL Codespaces](src/open_airflow_ui_codespaces.png)
+5. **Produce messages:**
+   ```bash
+   docker exec -it kafka kafka-console-producer.sh --bootstrap-server localhost:9092 --topic test-topic
+   ```
 
-5. Unpause all DAGs. Manually run the `produce_consume_treats` DAG to see the pipeline in action. Note that a random function is used to generate parts of the message to Kafka which determines if the `listen_for_mood` task will trigger the downstream `walking_your_pet` DAG. You might need to run the `produce_consume_treats` several times to see the full pipeline in action!
+6. **Consume messages:**
+   ```bash
+   docker exec -it kafka kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic test-topic --from-beginning
+   ```
 
-## Option 2: Use the Astro CLI
+## Client Usage
 
-Download the [Astro CLI](https://docs.astronomer.io/astro/cli/install-cli) to run Airflow locally in Docker. `astro` is the only package you will need to install.
+Kafka supports clients in many programming languages. You can connect to the Kafka broker at `localhost:9092` using any Kafka client library:
 
-1. Run `git clone https://github.com/astronomer/airflow-quickstart.git` on your computer to create a local clone of this repository.
-2. Install the Astro CLI by following the steps in the [Astro CLI documentation](https://docs.astronomer.io/astro/cli/install-cli). Docker Desktop/Docker Engine is a prerequisite, but you don't need in-depth Docker knowledge to run Airflow with the Astro CLI.
-3. Run `astro dev start` in your cloned repository.
-4. After your Astro project has started. View the Airflow UI at `localhost:8080`. You can log in using `admin` as the username and `admin` as the password.
-5. Unpause all DAGs. Manually run the `produce_consume_treats` DAG to see the pipeline in action. Note that a random function is used to generate parts of the message to Kafka which determines if the `listen_for_mood` task will trigger the downstream `walking_your_pet` DAG. You might need to run the `produce_consume_treats` several times to see the full pipeline in action!
+- **Java**: Apache Kafka official client
+- **Python**: kafka-python, confluent-kafka-python
+- **Node.js**: kafkajs, node-rdkafka
+- **Go**: confluent-kafka-go, sarama
+- **Rust**: rdkafka
+- **.NET**: Confluent.Kafka
 
-# Resources
+All clients connect to the same bootstrap server: `localhost:9092`
 
-- [Use Apache Kafka with Apache Airflow tutorial](https://docs.astronomer.io/learn/airflow-kafka).
-- [Apache Kafka Airflow provider documentation](https://airflow.apache.org/docs/apache-airflow-providers-apache-kafka/stable/index.html).
-- [Apache Kafka documentation](https://kafka.apache.org/documentation/). 
-- [Apache Airflow documentation](https://airflow.apache.org/docs/apache-airflow/stable/index.html).
-- [Airflow Quickstart](https://docs.astronomer.io/learn/airflow-quickstart).
+## Stop Kafka
+
+```bash
+docker-compose down
+```
+
+To also remove the volumes (data):
+```bash
+docker-compose down -v
+```
+
+## Configuration
+
+The Kafka broker is configured in KRaft mode (no Zookeeper) with the following settings:
+- Bootstrap server: `localhost:9092`
+- Single broker setup with controller
+- Auto topic creation enabled
+- Data persisted in Docker volume
+
+## Kafka 4.1.0 Features
+
+This setup uses Apache Kafka 4.1.0, which includes:
+- KRaft mode (no Zookeeper dependency)
+- Improved performance and simplified operations
+- New queuing capabilities through share groups
+- Enhanced streams rebalance protocol
+
+For production environments, consider:
+- Multiple brokers for high availability
+- Proper replication factors
+- Security configurations (SSL/SASL)
+- Resource limits and JVM tuning

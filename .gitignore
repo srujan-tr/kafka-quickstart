@@ -1,7 +1,10 @@
 .git
-.DS_Store # macOS specific ignore
+.DS_Store
 .env
-__pycache__/
-astro
-**__pycache__
-**.DS_Store
+.idea/
+.vscode/
+kafka-data/
+*.log
+target/
+build/
+node_modules/

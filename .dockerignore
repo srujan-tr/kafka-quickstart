@@ -1,5 +1,10 @@
-astro
 .git
+.gitignore
 .env
-airflow_settings.yaml
-logs/
+*.md
+.DS_Store
+.idea/
+.vscode/
+node_modules/
+target/
+build/
